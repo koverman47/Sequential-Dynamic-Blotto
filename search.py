@@ -121,8 +121,7 @@ class Minimax:
                 n = n.children[i]
             d += 1
         return path
-            
-
+ 
     def run(self):
         t1 = time()
         xV = self.gen_xspace(self.x0)
@@ -160,9 +159,11 @@ class Minimax:
             return node.p
         elif d == 0:
             if str(node.x) in self.xspaces:
+                #print("Passed Checks")
                 xV = self.xspaces[str(node.x)]
             else:
                 xV = self.gen_xspace(node.x)
+                self.xspace[str(node.x)] = xV
             value = -1000
             XRes = sum(self.x0)
             L = int(XRes / self.R) + 1
@@ -182,9 +183,11 @@ class Minimax:
             return value
         elif d % 2 == 1:
             if str(node.y) in self.yspaces:
+                #print("Passed Checks")
                 yV = self.yspaces[str(node.y)]
             else:
                 yV = self.gen_xspace(node.y)
+                self.yspaces[str(node.y)] = yV
             value = 1000
             YRes = sum(self.x0)
             L = int(YRes / self.R) + 1
@@ -205,9 +208,11 @@ class Minimax:
             return node.p
         elif d % 2 == 0:
             if str(node.x) in self.xspaces:
+                #print("Passed Checks")
                 xV = self.xspaces[str(node.x)]
             else:
                 xV = self.gen_xspace(node.x)
+                self.xspaces[str(node.x)] = xV
             value = -1000
             XRes = sum(self.x0)
             L = int(XRes / self.R) + 1
@@ -232,7 +237,7 @@ class Minimax:
 
 if __name__ == "__main__":
     # Define vars
-    md = 2
+    md = 1
     A = np.array([[0, 0, 1], [1, 0, 0], [0, 1, 0]])
     R = 0.1
     V = np.array([1., 1., 1.])
