@@ -19,6 +19,8 @@ class Minimax:
         self.x0 = x0
         self.y0 = y0
         self.md = max_depth
+        self.xspaces = {}
+        self.yspaces = {}
 
     '''
     ' x_cand, y_cand, V
@@ -125,6 +127,8 @@ class Minimax:
         t1 = time()
         xV = self.gen_xspace(self.x0)
         yV = self.gen_xspace(self.y0)
+        self.xspaces[str(self.x0)] = xV
+        self.yspaces[str(self.y0)] = yV
         node = Node(self.x0, self.y0, 0, None)
         value = self.abpruning(node, 0, -1000, 1000, xV, yV)
         t2 = time()
@@ -155,7 +159,10 @@ class Minimax:
             node.set_payoff(p)
             return node.p
         elif d == 0:
-            xV = self.gen_xspace(node.x)
+            if str(node.x) in self.xspaces:
+                xV = self.xspaces[str(node.x)]
+            else:
+                xV = self.gen_xspace(node.x)
             value = -1000
             XRes = sum(self.x0)
             L = int(XRes / self.R) + 1
@@ -174,7 +181,10 @@ class Minimax:
             node.set_payoff(value)
             return value
         elif d % 2 == 1:
-            yV = self.gen_xspace(node.y)
+            if str(node.y) in self.yspaces:
+                yV = self.yspaces[str(node.y)]
+            else:
+                yV = self.gen_xspace(node.y)
             value = 1000
             YRes = sum(self.x0)
             L = int(YRes / self.R) + 1
@@ -194,7 +204,10 @@ class Minimax:
             node.set_payoff(value)
             return node.p
         elif d % 2 == 0:
-            xV = self.gen_xspace(node.x)
+            if str(node.x) in self.xspaces:
+                xV = self.xspaces[str(node.x)]
+            else:
+                xV = self.gen_xspace(node.x)
             value = -1000
             XRes = sum(self.x0)
             L = int(XRes / self.R) + 1
@@ -219,7 +232,7 @@ class Minimax:
 
 if __name__ == "__main__":
     # Define vars
-    md = 1
+    md = 2
     A = np.array([[0, 0, 1], [1, 0, 0], [0, 1, 0]])
     R = 0.1
     V = np.array([1., 1., 1.])
