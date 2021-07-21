@@ -19,6 +19,9 @@ class Minimax:
         self.x0 = x0
         self.y0 = y0
         self.md = max_depth
+        self.xspaces = {}
+        self.yspaces = {}
+        p = self.get_payoff(x0, y0)
 
     '''
     ' x_cand, y_cand, V
@@ -27,19 +30,19 @@ class Minimax:
         assert len(xC) == len(yC)
         assert len(xC) == len(self.V)
 
-        win = []
-        loss = []
-        draw = []
-        p = 0.
-        for i in range(len(self.V)):
-            if xC[i] > yC[i]:
-                p += self.V[i]
-            elif xC[i] < yC[i]:
-                p -= self.V[i]
-            if not (xC[i] > yC[i]):
-                p -= 0.5 * xC[i]
-                p += 0.5 * yC[i]
-        return p
+        d = xC - yC
+        win = np.where(d > 0., 1, 0)
+        los = np.where(d < 0., 1, 0)
+        drw = np.where(d == 0., 1, 0)
+
+        p1 = sum(self.V[np.where(win == 1)])
+        p2 = sum(self.V[np.where(los == 1)])
+        p3 = 0.5 * sum(xC[np.where(win == 0)])
+        p4 = 0.5 * sum(yC[np.where(los == 0)])
+
+        u = p1 - p2 - p3 + p4
+        return u
+
 
     '''
     ' A, K, x
@@ -93,7 +96,7 @@ class Minimax:
             poly.append((v[0], v[1]))
         polygon = Polygon(poly)
         if polygon.contains(point):
-            return [x, y, sum(xV[:, 1]) - x - y]
+            return np.array([x, y, sum(xV[:, 1]) - x - y])
         return False
 
     def get_num_nodes(self, node):
@@ -119,12 +122,13 @@ class Minimax:
                 n = n.children[i]
             d += 1
         return path
-            
-
+ 
     def run(self):
         t1 = time()
         xV = self.gen_xspace(self.x0)
         yV = self.gen_xspace(self.y0)
+        self.xspaces[str(self.x0)] = xV
+        self.yspaces[str(self.y0)] = yV
         node = Node(self.x0, self.y0, 0, None)
         value = self.abpruning(node, 0, -1000, 1000, xV, yV)
         t2 = time()
@@ -133,16 +137,6 @@ class Minimax:
         path = self.recover_solution(node)
         print(path)
         print("Number of Nodes : %d" % self.get_num_nodes(node))
-
-    def minimax(self):
-        xvert = self.gen_xspace(self.x0)
-        XRes = sum(self.x0)
-        L = int(XRes / self.R) + 1
-        samples = []
-        for i in range(L**2):
-            x1 = self.sample_action(xvert, L, i)
-            if x1 is not False:
-                samples.append(x1)
 
     '''
     ' node, depth, alpha, beta, maximizer
@@ -155,7 +149,12 @@ class Minimax:
             node.set_payoff(p)
             return node.p
         elif d == 0:
-            xV = self.gen_xspace(node.x)
+            if str(node.x) in self.xspaces:
+                #print("Passed Checks")
+                xV = self.xspaces[str(node.x)]
+            else:
+                xV = self.gen_xspace(node.x)
+                self.xspace[str(node.x)] = xV
             value = -1000
             XRes = sum(self.x0)
             L = int(XRes / self.R) + 1
@@ -163,6 +162,7 @@ class Minimax:
                 x = self.sample_action(xV, L, i)
                 if x is False:
                     continue
+                print(x)
                 n = Node(x, node.y, d+1, node)
                 node.children.append(n)
                 # Maximizer?
@@ -174,7 +174,12 @@ class Minimax:
             node.set_payoff(value)
             return value
         elif d % 2 == 1:
-            yV = self.gen_xspace(node.y)
+            if str(node.y) in self.yspaces:
+                #print("Passed Checks")
+                yV = self.yspaces[str(node.y)]
+            else:
+                yV = self.gen_xspace(node.y)
+                self.yspaces[str(node.y)] = yV
             value = 1000
             YRes = sum(self.x0)
             L = int(YRes / self.R) + 1
@@ -194,7 +199,12 @@ class Minimax:
             node.set_payoff(value)
             return node.p
         elif d % 2 == 0:
-            xV = self.gen_xspace(node.x)
+            if str(node.x) in self.xspaces:
+                #print("Passed Checks")
+                xV = self.xspaces[str(node.x)]
+            else:
+                xV = self.gen_xspace(node.x)
+                self.xspaces[str(node.x)] = xV
             value = -1000
             XRes = sum(self.x0)
             L = int(XRes / self.R) + 1
@@ -202,6 +212,7 @@ class Minimax:
                 x = self.sample_action(xV, L, i)
                 if x is False:
                     continue
+                print(x)
                 n = Node(x, node.y, d+1, node)
                 node.children.append(n)
                 # Maximizer?
@@ -231,5 +242,4 @@ if __name__ == "__main__":
     K = np.array(gen_kspace(A))
 
     game = Minimax(A, R, V, K, x0, y0, 2 * md)
-    #game.minimax()
     game.run()
