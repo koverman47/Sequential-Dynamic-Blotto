@@ -219,7 +219,7 @@ class Minimax:
 
 if __name__ == "__main__":
     # Define vars
-    md = 1
+    md = 2
     A = np.array([[0, 0, 1], [1, 0, 0], [0, 1, 0]])
     R = 0.1
     V = np.array([1., 1., 1.])
