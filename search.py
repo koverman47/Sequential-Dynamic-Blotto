@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import sys
 import math
 import numpy as np
 from time import time
@@ -74,10 +75,11 @@ class Minimax:
             vsave[:, i] = xv
 
         xVsave = np.unique(vsave, axis=1)
+        xVsave = np.round(xVsave, 4)
         twodee = xVsave[:2, :] 
         indices = np.array(ConvexHull(twodee.T).vertices)
         xV = xVsave.T[indices]
-
+        
         return xV.T
 
     '''
@@ -87,16 +89,20 @@ class Minimax:
         r = i % n
         c = math.floor(i / n)
         
-        x = r * self.R
-        y = c * self.R
+        x = np.round(r * self.R, 4)
+        y = np.round(c * self.R, 4)
 
         point = Point(x, y)
         poly = []
-        for v in xV:
+        xVT = xV.T
+        for v in xVT:
             poly.append((v[0], v[1]))
         polygon = Polygon(poly)
-        if polygon.contains(point):
+        if polygon.contains(point) or point.intersects(polygon):
             return np.array([x, y, sum(xV[:, 1]) - x - y])
+        #print("Outside of Polygon")
+        #print([x, y, sum(xV[:, 1]) - x - y])
+        #print("\n")
         return False
 
     def get_num_nodes(self, node):
@@ -126,6 +132,19 @@ class Minimax:
     def run(self):
         t1 = time()
         xV = self.gen_xspace(self.x0)
+        ###
+        XRes = sum(self.x0)
+        L = int(XRes / self.R) + 1
+        c = 0
+        for i in range(L**2):
+            x = self.sample_action(xV, L, i)
+            if x is not False:
+                c += 1
+                #print(x, sum(x))
+                print(x[0], x[1], x[2])
+        print(c)
+        sys.exit()
+        ###
         yV = self.gen_xspace(self.y0)
         self.xspaces[str(self.x0)] = xV
         self.yspaces[str(self.y0)] = yV
